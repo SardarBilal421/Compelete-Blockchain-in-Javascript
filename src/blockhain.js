@@ -45,7 +45,7 @@ class Transactions {
 }
 
 class Block {
-  constructor(timestamp, transactions, previousHash = "") {
+  constructor(timestamp, transactions, previousHash) {
     this.timestamp = timestamp;
     this.transactions = transactions;
     this.previousHash = previousHash;
@@ -67,8 +67,9 @@ class Block {
       this.hash.substring(0, difficulty) !== Array(difficulty + 1).join(" ")
     ) {
       this.nonce++;
-      this.hash = this.calculateHash();
+      // this.hash = this.calculateHash();
     }
+    this.hash = this.calculateHash();
     console.log(" Block mined : " + this.hash);
   }
 
@@ -91,7 +92,7 @@ class Blockchain {
     this.miningReward = 100;
   }
   createGenesisBlock() {
-    return new Block(0, " 01/01/2017 ", " Genesis block ", " 0 ");
+    return new Block(" 01/01/2017 ", " Genesis block ", "0");
   }
   getLatestBlock() {
     return this.chain[this.chain.length - 1];
@@ -103,7 +104,11 @@ class Blockchain {
   // }
 
   minePendingTrasactions(miningRewardAddress) {
-    let block = new Block(Date.now(), this.pendingTransactions);
+    let block = new Block(
+      Date.now(),
+      this.pendingTransactions,
+      this.chain[this.chain.length - 1].hash
+    );
     block.mineBlock(this.difficulty);
 
     console.log("Block Successfully Mined");
@@ -149,15 +154,19 @@ class Blockchain {
       const previousBlock = this.chain[i - 1];
 
       if (!currentBlock.hasValidTransactions()) {
+        console.log("1");
         return false;
       }
 
       if (currentBlock.hash !== currentBlock.calculateHash()) {
+        console.log(i, "2");
         return false;
       }
 
       if (currentBlock.previousHash !== previousBlock.calculateHash()) {
-        return false;
+        if (i != 1) {
+          return false;
+        }
       }
     }
     return true;
